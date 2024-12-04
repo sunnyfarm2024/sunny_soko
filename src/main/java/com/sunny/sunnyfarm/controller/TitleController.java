@@ -21,7 +21,7 @@ public class TitleController {
     }
 
     @GetMapping("/list")
-    public List<UserTitleDto> getTitleList(@RequestParam int userId) {
+    public ResponseEntity<List<TitleDto>> getTitleList(@RequestParam int userId) {
         return titleService.getTitleList(userId);
     }
 
@@ -40,12 +40,11 @@ public class TitleController {
     public ResponseEntity<String> changeProgress(@RequestParam int userId, @RequestParam int plantId) {
         boolean result = titleService.archiveTitle(plantId, userId);
 
-        /*if (result) {
+        if (result) {
             return ResponseEntity.ok("칭호 변경 성공");
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("칭호 변경 실패");
-        }*/
-        return ResponseEntity.ok("연동 성공");
+        }
     }
 
 }

@@ -1,10 +1,12 @@
 package com.sunny.sunnyfarm.impl;
 
+import com.sunny.sunnyfarm.dto.TitleDto;
 import com.sunny.sunnyfarm.dto.UserTitleDto;
 import com.sunny.sunnyfarm.entity.Title;
 import com.sunny.sunnyfarm.entity.UserTitle;
 import com.sunny.sunnyfarm.repository.TitleRepository;
 import com.sunny.sunnyfarm.service.TitleService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,27 +26,24 @@ public class TitleServiceImpl implements TitleService {
     }
 
     @Override
-    public List<UserTitleDto> getTitleList(int userId) {
+    public ResponseEntity<List<TitleDto>> getTitleList(int userId) {
         // Fetch UserTitle entities
         List<UserTitle> userTitles = titleRepository.findByUserId(userId);
 
-        // Convert UserTitle to UserTitleDto
-        return userTitles.stream()
+        // Convert UserTitle to TitleDto
+        List<TitleDto> titleDtos = userTitles.stream()
                 .map(userTitle -> {
-                    // Extract Title from UserTitle
                     Title title = userTitle.getTitle();
 
-                    // Create UserTitleDto with Title object
-                    return new UserTitleDto(
-                            userTitle.getUserTitleId(),
-                            userTitle.getUser().getUserId(),
-                            userTitle.getTitleProgress(),
-                            userTitle.isTitleCompleted(),
-                            userTitle.isActive(),
-                            title // Embed Title object
+                    return new TitleDto(
+                            title.getTitleId(),
+                            title.getTitleName(),
+                            title.getTitleRequirement()
                     );
                 })
                 .collect(Collectors.toList());
+
+        return ResponseEntity.ok(titleDtos);
     }
 
     @Override
