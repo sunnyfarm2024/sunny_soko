@@ -1,7 +1,6 @@
 package com.sunny.sunnyfarm.impl;
 
 import com.sunny.sunnyfarm.dto.TitleDto;
-import com.sunny.sunnyfarm.dto.UserTitleDto;
 import com.sunny.sunnyfarm.entity.Title;
 import com.sunny.sunnyfarm.entity.UserTitle;
 import com.sunny.sunnyfarm.repository.TitleRepository;
@@ -38,7 +37,7 @@ public class TitleServiceImpl implements TitleService {
                     return new TitleDto(
                             title.getTitleId(),
                             title.getTitleName(),
-                            title.getTitleRequirement()
+                            userTitle.isActive()
                     );
                 })
                 .collect(Collectors.toList());
@@ -86,7 +85,7 @@ public class TitleServiceImpl implements TitleService {
             default -> throw new IllegalArgumentException("Invalid plantId: " + plantId);
         }
 
-        return false;
+        return true;
     }
 
     @Transactional

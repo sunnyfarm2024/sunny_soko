@@ -12,8 +12,11 @@ import java.util.List;
 public interface TitleRepository extends JpaRepository<UserTitle, Integer> {
 
 
-    @Query("SELECT u FROM UserTitle u JOIN FETCH u.title WHERE u.user.userId = :userId AND u.isTitleCompleted = TRUE")
+    @Query("SELECT ut FROM UserTitle ut JOIN FETCH ut.title WHERE ut.user.userId = :userId AND ut.isTitleCompleted = TRUE")
     List<UserTitle> findByUserId(@Param("userId") int userId);
+
+    @Query("SELECT ut FROM UserTitle ut JOIN FETCH ut.title WHERE ut.user.userId = :userId AND ut.title.titleId = :plantId")
+    UserTitle findByTitleId(@Param("userId") int userId, @Param("plantId") int plantId);
 
     @Modifying
     @Transactional
@@ -32,16 +35,6 @@ public interface TitleRepository extends JpaRepository<UserTitle, Integer> {
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE usertitle ut " +
-            "SET ut.title_progress = ut.title_progress + 1, " +
-            "    ut.is_title_completed = CASE " +
-            "        WHEN ut.title_progress >= (SELECT t.title_requirement FROM title t WHERE t.title_id = ut.title_id) " +
-            "        THEN TRUE " +
-            "        ELSE ut.is_title_completed " +
-            "    END " +
-            "WHERE ut.user_id = :userId AND ut.title_id = :titleId", nativeQuery = true)
+    @Query(value = "UPDATE usertitle ut SET ut.title_progress = ut.title_progress + 1 ut.is_title_completed = CASE WHEN ut.title_progress >= (SELECT t.title_requirement FROM title t WHERE t.title_id = ut.title_id) THEN TRUE ELSE ut.is_title_completed END WHERE ut.user_id = :userId AND ut.title_id = :titleId", nativeQuery = true)
     void updateFarmerTitle(@Param("userId") int userId, @Param("titleId") int titleId);
-
-    @Query("SELECT ut FROM UserTitle ut JOIN FETCH ut.title WHERE ut.user.userId = :userId AND ut.title.titleId = :plantId")
-    UserTitle findByTitleId(@Param("userId") int userId, @Param("plantId") int plantId);
 }

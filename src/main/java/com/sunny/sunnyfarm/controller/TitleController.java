@@ -1,7 +1,6 @@
 package com.sunny.sunnyfarm.controller;
 
 import com.sunny.sunnyfarm.dto.TitleDto;
-import com.sunny.sunnyfarm.dto.UserTitleDto;
 import com.sunny.sunnyfarm.service.TitleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,9 +40,9 @@ public class TitleController {
         boolean result = titleService.archiveTitle(plantId, userId);
 
         if (result) {
-            return ResponseEntity.ok("칭호 변경 성공");
+            return ResponseEntity.ok("칭호 진행 성공");
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("칭호 변경 실패");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("칭호 진행 실패");
         }
     }
 

@@ -7,8 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TitleDto {
-    private int titleId;
-    private String titleName;
-    private boolean isActive;
+
+public class ShopDto {
+    private String ItemName;
+    private String ItemDescription;
+    private int price;
+    private String ItemCategory;
 }
