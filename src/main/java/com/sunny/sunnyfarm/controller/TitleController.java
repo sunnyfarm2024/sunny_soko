@@ -2,6 +2,7 @@ package com.sunny.sunnyfarm.controller;
 
 import com.sunny.sunnyfarm.dto.TitleDto;
 import com.sunny.sunnyfarm.service.TitleService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,13 +20,23 @@ public class TitleController {
         this.titleService = titleService;
     }
 
+
+    /// 지우기 꼭
+    @GetMapping("/userList")
+    public ResponseEntity<String> getUserList(HttpSession session, @RequestParam int userId) {
+        session.setAttribute("userId", userId);
+        return ResponseEntity.ok("가짜 로그인 성공성공");
+    }
+
     @GetMapping("/list")
-    public ResponseEntity<List<TitleDto>> getTitleList(@RequestParam int userId) {
+    public ResponseEntity<List<TitleDto>> getTitleList(HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
         return titleService.getTitleList(userId);
     }
 
     @PutMapping("/change")
-    public ResponseEntity<String> changeTitle(@RequestParam int userId, @RequestParam int titleId) {
+    public ResponseEntity<String> changeTitle(HttpSession session, @RequestParam int titleId) {
+        Integer userId = (Integer) session.getAttribute("userId");
         boolean result = titleService.changeTitle(titleId, userId);
 
         if (result) {
@@ -36,7 +47,8 @@ public class TitleController {
     }
 
     @PutMapping("/progress")
-    public ResponseEntity<String> changeProgress(@RequestParam int userId, @RequestParam int plantId) {
+    public ResponseEntity<String> changeProgress(HttpSession session, @RequestParam int plantId) {
+        Integer userId = (Integer) session.getAttribute("userId");
         boolean result = titleService.archiveTitle(plantId, userId);
 
         if (result) {

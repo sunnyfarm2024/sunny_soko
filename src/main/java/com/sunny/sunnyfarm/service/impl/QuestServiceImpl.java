@@ -1,8 +1,9 @@
-package com.sunny.sunnyfarm.impl;
+package com.sunny.sunnyfarm.service.impl;
 
 import com.sunny.sunnyfarm.dto.QuestDto;
 import com.sunny.sunnyfarm.entity.*;
 import com.sunny.sunnyfarm.repository.QuestRepository;
+import com.sunny.sunnyfarm.repository.UserRepository;
 import com.sunny.sunnyfarm.service.QuestService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -13,9 +14,11 @@ import java.util.stream.Collectors;
 @Service
 public class QuestServiceImpl implements QuestService {
     private final QuestRepository questRepository;
+    private final UserRepository userRepository;
 
-    public QuestServiceImpl(QuestRepository questRepository) {
+    public QuestServiceImpl(QuestRepository questRepository, UserRepository userRepository) {
         this.questRepository = questRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -63,6 +66,7 @@ public class QuestServiceImpl implements QuestService {
     @Override
     public void claimQuestReward(int userId, int questId) {
         UserQuest userquest = questRepository.findUserQuestByQuestId(userId, questId);
+        User user = userquest.getUser();
 
         if (!userquest.isQuestCompleted() && userquest.getQuestProgress() == userquest.getQuest().getQuestRequirement()) {
             if (userquest.getQuest().getType() == Quest.QuestType.DAILY) {
@@ -70,7 +74,9 @@ public class QuestServiceImpl implements QuestService {
             } else {
                 userquest.setQuestProgress(0);
             }
+            user.setCoinBalance(user.getCoinBalance() + userquest.getQuest().getReward());
             questRepository.save(userquest);
+            userRepository.save(user);
             System.out.println("UserQuest updated successfully.");
         }
     }

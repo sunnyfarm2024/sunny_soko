@@ -1,5 +1,6 @@
 package com.sunny.sunnyfarm.repository;
 
+
 import com.sunny.sunnyfarm.entity.UserTitle;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -35,6 +36,6 @@ public interface TitleRepository extends JpaRepository<UserTitle, Integer> {
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE usertitle ut SET ut.title_progress = ut.title_progress + 1 ut.is_title_completed = CASE WHEN ut.title_progress >= (SELECT t.title_requirement FROM title t WHERE t.title_id = ut.title_id) THEN TRUE ELSE ut.is_title_completed END WHERE ut.user_id = :userId AND ut.title_id = :titleId", nativeQuery = true)
+    @Query(value = "UPDATE usertitle ut SET ut.title_progress = ut.title_progress + 1, ut.is_title_completed = CASE WHEN ut.title_progress >= (SELECT t.title_requirement FROM title t WHERE t.title_id = ut.title_id) THEN TRUE ELSE ut.is_title_completed END WHERE ut.user_id = :userId AND ut.title_id = :titleId", nativeQuery = true)
     void updateFarmerTitle(@Param("userId") int userId, @Param("titleId") int titleId);
 }

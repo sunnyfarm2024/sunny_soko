@@ -1,4 +1,4 @@
-package com.sunny.sunnyfarm.impl;
+package com.sunny.sunnyfarm.service.impl;
 
 import com.sunny.sunnyfarm.dto.TitleDto;
 import com.sunny.sunnyfarm.entity.Title;
@@ -26,11 +26,9 @@ public class TitleServiceImpl implements TitleService {
 
     @Override
     public ResponseEntity<List<TitleDto>> getTitleList(int userId) {
-        // Fetch UserTitle entities
         List<UserTitle> userTitles = titleRepository.findByUserId(userId);
 
-        // Convert UserTitle to TitleDto
-        List<TitleDto> titleDtos = userTitles.stream()
+        List<TitleDto> titleDTOs = userTitles.stream()
                 .map(userTitle -> {
                     Title title = userTitle.getTitle();
 
@@ -42,7 +40,7 @@ public class TitleServiceImpl implements TitleService {
                 })
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(titleDtos);
+        return ResponseEntity.ok(titleDTOs);
     }
 
     @Override
@@ -87,6 +85,8 @@ public class TitleServiceImpl implements TitleService {
 
         return true;
     }
+
+
 
     @Transactional
     protected void updateMasterTitle(int userId, int plantId) {

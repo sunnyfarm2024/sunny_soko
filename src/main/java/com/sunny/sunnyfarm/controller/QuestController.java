@@ -2,6 +2,7 @@ package com.sunny.sunnyfarm.controller;
 
 import com.sunny.sunnyfarm.dto.QuestDto;
 import com.sunny.sunnyfarm.service.QuestService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +18,14 @@ public class QuestController {
     public QuestController(QuestService questService) {this.questService = questService;}
 
     @GetMapping("/list")
-    ResponseEntity<List<QuestDto>> getQuestList(@RequestParam int userId, @RequestParam String type) {
+    ResponseEntity<List<QuestDto>> getQuestList(HttpSession session, @RequestParam String type) {
+        Integer userId = (Integer) session.getAttribute("userId");
         return questService.getQuestList(userId, type);
     }
 
     @PostMapping("/progress")
-    ResponseEntity<String> updateQuestProgress(@RequestParam int userId, @RequestParam int questId) {
+    ResponseEntity<String> updateQuestProgress(HttpSession session, @RequestParam int questId) {
+        Integer userId = (Integer) session.getAttribute("userId");
         try {
             questService.updateQuestProgress(userId, questId); // Service 메서드 호출
             return ResponseEntity.ok("퀘스트 진행 성공"); // 성공 시 메시지 반환
@@ -33,7 +36,8 @@ public class QuestController {
     }
 
     @PostMapping("/reward")
-    ResponseEntity<String> claimQuestReward(@RequestParam int userId, @RequestParam int questId) {
+    ResponseEntity<String> claimQuestReward(HttpSession session, @RequestParam int questId) {
+        Integer userId = (Integer) session.getAttribute("userId");
         try {
             questService.claimQuestReward(userId, questId); // Service 메서드 호출
             return ResponseEntity.ok("퀘스트 보상 수령 성공"); // 성공 시 메시지 반환

@@ -1,11 +1,11 @@
 package com.sunny.sunnyfarm.service;
 
-import com.sunny.sunnyfarm.dto.ShopDto;
+import com.sunny.sunnyfarm.entity.Shop;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 public interface ShopService {
-    ResponseEntity<List<ShopDto>> getItemList();
-    ResponseEntity<String> checkItemAvailability(int userId, int itemId);
-    ResponseEntity<String> purchaseItem(int userId, int itemId);
+    List<Shop> getItemList();
+    boolean checkItemAvailability(int userId, int itemId);
+    ResponseEntity<Object> purchaseItem(int userId, Shop item);
 }
