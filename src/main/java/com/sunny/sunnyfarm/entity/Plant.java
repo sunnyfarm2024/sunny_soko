@@ -34,20 +34,25 @@ public class Plant {
     @Column(name = "plant_description", columnDefinition = "TEXT")
     private String plantDescription;
 
+    @Column(name = "level1_image")
+    private String level1Image;
+
+    @Column(name = "level2_image")
+    private String level2Image;
+
+    @Column(name = "level3_image")
+    private String level3Image;
+
+    @Column(name = "max_image")
+    private String maxImage;
+
+    @Column(name = "dead_image")
+    private String deadImage;
+
     public enum Difficulty {
-        ONE(1),
-        TWO(2),
-        THREE(3);
-
-        private final int value;
-
-        Difficulty(int value) {
-            this.value = value;
-        }
-
-        public int getValue() {
-            return value;
-        }
+        EASY,
+        MEDIUM,
+        HARD
     }
 
     public enum PlantType {

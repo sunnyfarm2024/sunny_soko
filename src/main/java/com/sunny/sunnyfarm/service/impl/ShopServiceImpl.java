@@ -41,14 +41,6 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     public ResponseEntity<Object> purchaseItem(int userId, Shop item) {
-        System.out.println("Item ID: " + item.getItemId());
-        System.out.println("Item Name: " + item.getItemName());
-        System.out.println("Item Category: " + item.getCategory());
-        System.out.println("Item Price: " + item.getPrice());
-        System.out.println("Item Currency: " + item.getCurrency());
-        System.out.println("Item Description: " + item.getItemDescription());
-        System.out.println("Item Image URL: " + item.getItemImageUrl());
-
 
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("유저 정보를 찾을 수 없습니다"));
 
@@ -65,7 +57,6 @@ public class ShopServiceImpl implements ShopService {
             if (diamond >= price) user.setDiamondBalance(diamond - price);
             else return ResponseEntity.status(400).body("다이아가 부족합니다.");
         } else {
-            System.out.println("산다!!!!!!!!!");
             transactionService.recordTransaction(user, item);
         }
 
@@ -77,16 +68,15 @@ public class ShopServiceImpl implements ShopService {
             }
 
             if (item.getCurrency() == Shop.CurrencyType.CASH) {
-                System.out.println("돈이다!!!!!!!!!");
                 user.setDiamondBalance(user.getDiamondBalance() + price);
             } else {
                 user.setCoinBalance(user.getCoinBalance() + price);
             }
         } else {
-            if (!inventoryService.checkAvailableSlot(userId)) {
+            /*if (!inventoryService.checkAvailableSlot(userId)) {
                 return ResponseEntity.status(400).body("인벤토리가 꽉 찼습니다.");
             }
-            inventoryService.addItem(userId, item.getItemId());
+            inventoryService.addItem(userId, item.getItemId());*/
         }
 
         userRepository.save(user); // 재화 업데이트 저장
