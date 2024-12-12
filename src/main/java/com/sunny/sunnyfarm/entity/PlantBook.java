@@ -21,7 +21,9 @@ public class PlantBook {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "plant_id", nullable = false)
-    private Plant plant;
+    @Column(name = "plantbook_description", columnDefinition = "TEXT")
+    private String plantbookDescription;
+
+    @Column(name = "plantbook_image")
+    private String plantbookImage;
 }

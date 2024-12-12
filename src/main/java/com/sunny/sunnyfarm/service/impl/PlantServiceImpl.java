@@ -1,32 +1,35 @@
 package com.sunny.sunnyfarm.service.impl;
 import com.sunny.sunnyfarm.dto.UserPlantDto;
 import com.sunny.sunnyfarm.dto.WeatherDto;
-import com.sunny.sunnyfarm.entity.Farm;
-import com.sunny.sunnyfarm.entity.Plant;
-import com.sunny.sunnyfarm.entity.User;
-import com.sunny.sunnyfarm.entity.UserPlant;
-import com.sunny.sunnyfarm.repository.PlantRepository;
-import com.sunny.sunnyfarm.repository.UserPlantRepository;
-import com.sunny.sunnyfarm.repository.UserRepository;
+import com.sunny.sunnyfarm.entity.*;
+import com.sunny.sunnyfarm.repository.*;
 import com.sunny.sunnyfarm.service.PlantService;
+import com.sunny.sunnyfarm.service.TitleService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class PlantServiceImpl implements PlantService {
 
+    private final TitleService titleService;
     private final UserPlantRepository userPlantRepository;
     private final UserRepository userRepository;
     private final PlantRepository plantRepository;
+    private final PlantbookRepository plantbookRepository;
+    private final TitleRepository titleRepository;
 
-    public PlantServiceImpl(UserPlantRepository userPlantRepository, UserRepository userRepository, PlantRepository plantRepository) {
+    public PlantServiceImpl(TitleService titleService, UserPlantRepository userPlantRepository, UserRepository userRepository, PlantRepository plantRepository, PlantbookRepository plantbookRepository, TitleRepository titleRepository) {
+        this.titleService = titleService;
         this.userPlantRepository = userPlantRepository;
         this.userRepository = userRepository;
         this.plantRepository = plantRepository;
+        this.plantbookRepository = plantbookRepository;
+        this.titleRepository = titleRepository;
     }
 
     @Override
@@ -38,10 +41,12 @@ public class PlantServiceImpl implements PlantService {
     @Override
     public ResponseEntity<String> waterPlant(int userId, int userPlantId) {
         UserPlant userPlant = userPlantRepository.findByUserPlantId(userPlantId);
-        User user = userRepository.getById(userId);
-
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("회원 정보를 찾을 수가 없습니다"));
         int waterLevel = userPlant.getWaterLevel();
         int waterBalance = user.getWaterBalance();
+
+        LocalDateTime now = LocalDateTime.now();
 
         if (waterLevel < 5) {
             if (waterBalance > 0) {
@@ -49,7 +54,7 @@ public class PlantServiceImpl implements PlantService {
                 waterLevel++;
                 user.setWaterBalance(waterBalance);
                 userPlant.setWaterLevel(waterLevel);
-                userPlant.setLastWateredAt(LocalDateTime.now());
+                userPlant.setLastWateredAt(now);
 
                 userRepository.save(user);
                 userPlantRepository.save(userPlant);
@@ -67,8 +72,9 @@ public class PlantServiceImpl implements PlantService {
     @Override
     public ResponseEntity<String> sellPlant(int userId, int userPlantId) {
         UserPlant userPlant = userPlantRepository.findByUserPlantId(userPlantId);
-        User user = userRepository.getById(userId);
-        Plant plant = plantRepository.getById(userPlantId);
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("회원 정보를 찾을 수가 없습니다"));
+        Plant plant = plantRepository.findById(userPlantId).orElseThrow(() -> new EntityNotFoundException("해당 식물을 찾을 수 없습니다"));
+
 
         if (userPlant.getGrowthStage() == UserPlant.GrowthStage.MAX) {
             if (deletePlant(userPlantId)) {
@@ -96,90 +102,178 @@ public class PlantServiceImpl implements PlantService {
         }
     }
 
+    @Override
     public void updateGrowthStage(int userPlantId) {
+
         UserPlant userPlant = userPlantRepository.getUserPlants(userPlantId);
         Farm farm = userPlant.getFarm();
         Plant plant = userPlant.getPlant();
         User user = userPlant.getFarm().getUser();
 
-        float growthProgress = userPlant.getGrowthProgress();
+        //WeatherDto 가져오기 ~ : parameter : userId (user.userId)
 
-        //날씨 호출 ~ Weather Dto 반환 ....... 했다 치고..
         WeatherDto weatherDto = new WeatherDto(
-                "7",
+                "19",
                 "1",
                 "0",
-                "35",
-                "1",
-                "0"
+                "58",
+                "0",
+                "1"
         );
 
-        applyWeather(userPlantId, weatherDto);
-        //해서 식물이 살아남았다 -> 반환 타입을 바꾸자
-        //해서 식물이 죽었따 -> 끝
 
-        applyFertilizer(userPlantId, userPlant.getFertilizerEndsAt());
+        LocalDateTime now = LocalDateTime.now();
 
-        /*식물 성장
-        : 각 난이도 별 일조시간 20, 30, 40 시간
-          일조 시간의 34%까지 1레벨, 67%까지 2레벨, 100%까지 3레벨, 그 이후 MAX
-        */
+        LocalDateTime gnomeEndsAt = farm.getGnomeEndsAt();
+        LocalDateTime lastWateredAt = userPlant.getLastWateredAt(); //
+
+        float sunlightHours;
+
+        if (userPlant.getSunlightHours() == 0) { //방금 심은 식물이라면
+            sunlightHours = (ChronoUnit.MINUTES.between(lastWateredAt, now) + 1) / 60F;
+        } else {
+            sunlightHours = 0.5F; // 30분
+        }
+
+
+        int livesLeft = userPlant.getLivesLeft();
+        int waterLevel = userPlant.getWaterLevel();
+
+        //생명관리
+        if (livesLeft > 0) { //살아있다면
+            if (gnomeEndsAt != null) {
+                if (now.isBefore(gnomeEndsAt) || now.isEqual(gnomeEndsAt)) { //노움 있으면 물 계속 5
+                    userPlant.setWaterLevel(5);
+                    userPlant.setLastWateredAt(now);
+                } else farm.setGnomeEndsAt(null);
+            } else { //노움 없으면
+                if (waterLevel >= 1) { //물이 하나 이상 남았을 경우
+                    if (now.isAfter(lastWateredAt.plusHours(5))) { //물 준 지 5시간이 지났을 경우
+                        waterLevel --;
+                        userPlant.setWaterLevel(waterLevel); //물 1개 빼기
+                        userPlant.setLastWateredAt(now);
+                    }
+                }
+                if (waterLevel == 0) { //물이 0개 남았을 경우
+                    if (now.isAfter(lastWateredAt.plusHours(24))) { //물이 0이 된지 24시간이 지났을 경우
+                        livesLeft --; //생명 1개 빼기
+                        userPlant.setLivesLeft(livesLeft);
+                        userPlant.setLastWateredAt(now);
+                    }
+                }
+            }
+        }
+
+        //성장관리
+        if (livesLeft > 0) { //살아있다면
+            userPlant.setGrowthProgress(0);
+            if (waterLevel == 0) {
+                userPlant.setGrowthProgress((float) -0.05); //물이 0이면 성장률 -5%
+            }
+            userPlant = applyWeather(userPlant, weatherDto); //성장률 업데이트
+            float growthProgress = userPlant.getGrowthProgress();
+
+            LocalDateTime fertilizerEndsAt = userPlant.getFertilizerEndsAt();
+            if (fertilizerEndsAt != null) {
+                if (now.isBefore(fertilizerEndsAt) || now.isEqual(fertilizerEndsAt)) { //영양제 있으면 + 10%
+                    growthProgress += 0.1F;
+                } else userPlant.setFertilizerEndsAt(null);
+            }
+
+            int corner = (farm.getCorner() != null) ? farm.getCorner().getItemId() : 0;
+            if (corner == 24) growthProgress += 0.01F;
+            else if (corner == 25) growthProgress += 0.03F;
+
+            sunlightHours += sunlightHours * growthProgress; //이번에 더할 일조량
+            float accumulatedSunlightHours = userPlant.getSunlightHours() + sunlightHours;
+
+            userPlant.setGrowthProgress(growthProgress); //성장률 최종 업데이트
+            userPlant.setSunlightHours(accumulatedSunlightHours); //일조량 최종 업데이트
+
+            String difficulty = plant.getDifficulty().name();
+            float max_sunlight;
+
+            if (difficulty.equals("EASY")) max_sunlight = 20;
+            else if (difficulty.equals("MEDIUM")) max_sunlight = 30;
+            else max_sunlight = 40;
+
+            if (userPlant.getGrowthStage() != UserPlant.GrowthStage.MAX) {
+                if (accumulatedSunlightHours <= max_sunlight / 3) userPlant.setGrowthStage(UserPlant.GrowthStage.LEVEL1);
+                else if (accumulatedSunlightHours <= max_sunlight / 3 * 2) userPlant.setGrowthStage(UserPlant.GrowthStage.LEVEL2);
+                else if (accumulatedSunlightHours <= max_sunlight) userPlant.setGrowthStage(UserPlant.GrowthStage.LEVEL3);
+                else {
+                    userPlant.setGrowthStage(UserPlant.GrowthStage.MAX);
+                    UserTitle usertitle = titleRepository.findByTitleId(user.getUserId(), plant.getPlantId());
+                    if (!usertitle.isTitleCompleted()) {
+                        addToPlantBook(user.getUserId(), plant.getPlantId());
+                        titleService.archiveTitle(plant.getPlantId(), user.getUserId());
+                    }
+                }
+            }
+        }
+
+        userPlantRepository.save(userPlant);
 
     }
 
     @Override
-    public void applyWeather(int userPlantId, WeatherDto weatherDto) {
-        System.out.println("Temperature: " + weatherDto.getTemperature());
-        System.out.println("Sky Status: " + weatherDto.getSkyStatus());
-        System.out.println("Precipitation: " + weatherDto.getPrecipitationType());
-        System.out.println("Humidity: " + weatherDto.getHumidity());
-        System.out.println("Wind Speed: " + weatherDto.getWindSpeed());
-        System.out.println("Lightning: " + weatherDto.getLightning());
+    public UserPlant applyWeather(UserPlant userPlant, WeatherDto weatherDto) {
+        int death = 0;
 
-        float growthProgress = 0;
+        //낙뢰
+        int lightning = Integer.parseInt(weatherDto.getLightning());
+        if (lightning >= 100) death += 15;
+        else if(lightning >= 50) death += 10;
+        else if(lightning >= 30) death += 5;
 
-        //1 맑, 3 구 많, 4 흐림
-        //강수량 0 없, 1 비, 2 비눈, -> x 3 눈, 5 빗방울, 6 빗방울 눈날림, 7 눈날림
-        if (weatherDto.getSkyStatus() == "1") {}
+        //풍속
+        int windSpeed = Integer.parseInt(weatherDto.getWindSpeed());
+        if (windSpeed >= 30) death += 15;
+        else if(windSpeed >= 20) death += 10;
+        else if(windSpeed >= 10) death += 5;
 
-        /*날씨 조건별 영향:
-        - 맑은 날: 성장 속도 +10% 가속
-                - 비 오는 날: 물이 없어도 성장 속도 유지
-                - 적절한 습도 (50~70): 성장 속도 +5% 가속
-                - 적정온도 (15~25): 성장 속도 +5% 가속
-                - 낙뢰:
-        30kA 미만 - 피해 없음
-        30 ~ 50kA - 5% 확률로 식물 사망
-        50 ~ 100kA - 10% 확률로 식물 사망
-        100kA 이상 - 15% 확률로 식물 사망
+        int randomNumber = (int) (Math.random() * 100);
 
-        - 풍속:
-        10m/s 미만 - 피해 없음
-        10 ~ 20m/s - 5% 확률로 식물 사망
-        20 ~ 30m/s - 10% 확률로 식물 사망
-        30m/s 이상 - 15% 확률로 식물 사망*/
-    }
+        if (randomNumber < death) { //식물 사망
+            userPlant.setLivesLeft(0);
+        } else { //살았다면
+            float growthProgress = userPlant.getGrowthProgress();
 
-    @Override
-    public void applyFertilizer(int userPlantId, LocalDateTime fertilizerEndsAt) {
-        //영양제가 있으면 +10%
-    }
+            //1 맑, 3 구 많, 4 흐림
+            //강수량 0 없, 1 비, 2 비눈, -> x 3 눈, 5 빗방울, 6 빗방울 눈날림, 7 눈날림
+            int precipitation = Integer.parseInt(weatherDto.getPrecipitationType());
+            if (precipitation == 1 || precipitation == 2) {
+                growthProgress = 0; //비오면 성장속도 원 위치
+                userPlant.setLastWateredAt(LocalDateTime.now()); //물 준 셈
+            }
 
-    @Override
-    public void applyGnome(int userPlantId) {
-        //놈 끝나는 시간이 지금보다 뒤면
-        //물 항상 5
-        //낙뢰, 강풍 피해 방지
-    }
+            if (weatherDto.getSkyStatus().equals("1")) growthProgress += 0.1F; //맑은 날 10%
 
-    @Override
-    public void applyDecoration(int userPlantId) {
-        //corner에 24번 아이템 사용중이면 +1%
-        //corner에 24번 아이템 사용중이면 +3%
+            int humidity = Integer.parseInt(weatherDto.getHumidity());
+            if (humidity >= 50 && humidity <= 70) growthProgress += 0.05F; //적정 습도 5%
+
+            int temperature = Integer.parseInt(weatherDto.getTemperature());
+            if (temperature >= 15 && temperature <= 25) growthProgress += 0.05F; //적정 온도 5%
+
+            userPlant.setGrowthProgress(growthProgress);
+        }
+
+        return userPlant;
     }
 
     @Override
     public void addToPlantBook(int userId, int plantId) {
-        //식물이 MAX가 되면 식물도감에 추가
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("회원 정보를 찾을 수가 없습니다"));
+        Plant plant = plantRepository.findById(plantId).orElseThrow(() -> new EntityNotFoundException("해당 식물을 찾을 수 없습니다"));
+
+        PlantBook plantbook = new PlantBook(
+                0,
+                user,
+                plant.getPlantDescription(),
+                plant.getMaxImage() == null ? "noImg" : plant.getMaxImage()
+        );
+
+        plantbookRepository.save(plantbook);
     }
+
 }

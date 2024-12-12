@@ -2,6 +2,7 @@ package com.sunny.sunnyfarm.service;
 
 import com.sunny.sunnyfarm.dto.UserPlantDto;
 import com.sunny.sunnyfarm.dto.WeatherDto;
+import com.sunny.sunnyfarm.entity.UserPlant;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
@@ -12,9 +13,7 @@ public interface PlantService {
     ResponseEntity<String> sellPlant(int userId, int userPlantId);
     boolean deletePlant(int userPlantId);
     void updateGrowthStage(int userPlantId);
-    void applyWeather(int userPlantId, WeatherDto weather);
-    void applyFertilizer(int userPlantId, LocalDateTime fertilizerEndsAt);
-    void applyGnome(int userPlantId);
-    void applyDecoration(int userPlantId);
+    UserPlant applyWeather(UserPlant userPlant, WeatherDto weatherDto);
     void addToPlantBook(int userId, int plantId);
+
 }
