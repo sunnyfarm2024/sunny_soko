@@ -1,6 +1,5 @@
 package com.sunny.sunnyfarm.service.impl;
 import com.sunny.sunnyfarm.dto.UserPlantDto;
-import com.sunny.sunnyfarm.dto.WeatherDto;
 import com.sunny.sunnyfarm.entity.*;
 import com.sunny.sunnyfarm.repository.*;
 import com.sunny.sunnyfarm.service.PlantService;
@@ -32,10 +31,6 @@ public class PlantServiceImpl implements PlantService {
         this.titleRepository = titleRepository;
     }
 
-    @Override
-    public UserPlantDto getPlantInfo(int userPlantId) {
-        return null;
-    }
 
 
     @Override

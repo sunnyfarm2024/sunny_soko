@@ -1,10 +1,10 @@
+### General ###
 HELP.md
 target/
+build/
 !.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
 
-### STS ###
+### Eclipse ###
 .apt_generated
 .classpath
 .factorypath
@@ -25,9 +25,16 @@ target/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 ### VS Code ###
 .vscode/
+
+### Logs ###
+*.log
+
+### Spring Boot Configuration ###
+src/main/resources/application.properties
+src/main/resources/application.yml
+
+### Exclude specific folder ###
+**/src/main/java/com/sunny/sunnyfarm/entity/
