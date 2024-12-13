@@ -25,7 +25,7 @@ public class PlantController {
     }
 
     @PostMapping("/sell")
-    ResponseEntity<String> sellPlant(HttpSession session, int userPlantId) {
+    ResponseEntity<String> sellPlant(HttpSession session, @RequestParam int userPlantId) {
         Integer userId = (Integer) session.getAttribute("userId");
         if (userId == null) userId = 1;
 
@@ -33,7 +33,7 @@ public class PlantController {
     }
 
     @DeleteMapping("/delete")
-    ResponseEntity<String> deletePlant(int userPlantId) {
+    ResponseEntity<String> deletePlant(@RequestParam int userPlantId) {
         if (plantService.deletePlant(userPlantId)) {
             return ResponseEntity.ok("식물을 버렸습니다.");
         } else {
@@ -42,7 +42,7 @@ public class PlantController {
     }
 
     @PostMapping("/growth")
-    ResponseEntity<String> updateGrowthStage(int userPlantId) {
+    ResponseEntity<String> updateGrowthStage(@RequestParam int userPlantId) {
         plantService.updateGrowthStage(userPlantId);
         return null;
     }

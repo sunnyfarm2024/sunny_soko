@@ -13,4 +13,6 @@ public class ShopDto {
     private String ItemDescription;
     private int price;
     private String ItemCategory;
+    private String ItemImage;
+    private String currency;
 }

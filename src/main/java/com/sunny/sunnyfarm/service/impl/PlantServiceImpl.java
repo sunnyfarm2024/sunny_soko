@@ -20,10 +20,10 @@ public class PlantServiceImpl implements PlantService {
     private final UserPlantRepository userPlantRepository;
     private final UserRepository userRepository;
     private final PlantRepository plantRepository;
-    private final PlantbookRepository plantbookRepository;
+    private final PlantBookRepository plantbookRepository;
     private final TitleRepository titleRepository;
 
-    public PlantServiceImpl(TitleService titleService, UserPlantRepository userPlantRepository, UserRepository userRepository, PlantRepository plantRepository, PlantbookRepository plantbookRepository, TitleRepository titleRepository) {
+    public PlantServiceImpl(TitleService titleService, UserPlantRepository userPlantRepository, UserRepository userRepository, PlantRepository plantRepository, PlantBookRepository plantbookRepository, TitleRepository titleRepository) {
         this.titleService = titleService;
         this.userPlantRepository = userPlantRepository;
         this.userRepository = userRepository;

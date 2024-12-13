@@ -31,7 +31,9 @@ public class ShopController {
                         item.getItemName(),
                         item.getItemDescription(),
                         item.getPrice(),
-                        item.getCategory().name()
+                        item.getCategory().name(),
+                        item.getItemImageUrl() == null ? "null" : item.getItemImageUrl(),
+                        item.getCurrency().name()
                 ))
                 .toList();
 

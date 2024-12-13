@@ -2,20 +2,20 @@ package com.sunny.sunnyfarm.service.impl;
 
 import com.sunny.sunnyfarm.dto.GuestbookDto;
 import com.sunny.sunnyfarm.entity.GuestBook;
-import com.sunny.sunnyfarm.repository.GuestbookRepository;
+import com.sunny.sunnyfarm.repository.GuestBookRepository;
 import com.sunny.sunnyfarm.repository.UserRepository;
-import com.sunny.sunnyfarm.service.GuestbookService;
+import com.sunny.sunnyfarm.service.GuestBookService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class GuestbookImpl implements GuestbookService {
-    private final GuestbookRepository guestbookRepository;
+public class GuestBookImpl implements GuestBookService {
+    private final GuestBookRepository guestbookRepository;
     private final UserRepository userRepository;
 
-    public GuestbookImpl(GuestbookRepository guestbookRepository, UserRepository userRepository) {
+    public GuestBookImpl(GuestBookRepository guestbookRepository, UserRepository userRepository) {
         this.guestbookRepository = guestbookRepository;
         this.userRepository = userRepository;
     }

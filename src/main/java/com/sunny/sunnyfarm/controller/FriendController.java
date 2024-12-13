@@ -1,9 +1,7 @@
 package com.sunny.sunnyfarm.controller;
 
 import com.sunny.sunnyfarm.dto.FriendDto;
-import com.sunny.sunnyfarm.dto.TitleDto;
 import com.sunny.sunnyfarm.service.FriendService;
-import com.sunny.sunnyfarm.service.TitleService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +35,6 @@ public class FriendController {
             List<FriendDto> searchList = friendService.searchFriend(userName);
             return ResponseEntity.ok(searchList);
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

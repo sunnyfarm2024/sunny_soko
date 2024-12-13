@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-public interface GuestbookRepository extends JpaRepository<GuestBook, Integer> {
+public interface GuestBookRepository extends JpaRepository<GuestBook, Integer> {
 
     @Query("SELECT g FROM GuestBook g WHERE g.user.userId = :userId")
     List<GuestBook> findByUserId(int userId);

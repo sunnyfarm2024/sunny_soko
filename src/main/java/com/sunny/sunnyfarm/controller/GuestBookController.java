@@ -1,37 +1,31 @@
 package com.sunny.sunnyfarm.controller;
 
 import com.sunny.sunnyfarm.dto.GuestbookDto;
-import com.sunny.sunnyfarm.dto.ShopDto;
-import com.sunny.sunnyfarm.entity.GuestBook;
-import com.sunny.sunnyfarm.entity.Shop;
-import com.sunny.sunnyfarm.service.GuestbookService;
-import com.sunny.sunnyfarm.service.ShopService;
+import com.sunny.sunnyfarm.service.GuestBookService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/guestbook")
-public class GuestbookController {
-    private final GuestbookService guestbookService;
+public class GuestBookController {
+    private final GuestBookService guestbookService;
 
-    public GuestbookController(GuestbookService guestbookService) {
+    public GuestBookController(GuestBookService guestbookService) {
         this.guestbookService = guestbookService;
     }
 
     @GetMapping("/list")
-    ResponseEntity<List<GuestbookDto>> getGuestbook (HttpSession session, int userId) {
+    ResponseEntity<List<GuestbookDto>> getGuestbook (HttpSession session, @RequestParam int userId) {
         List<GuestbookDto> guestbookList = guestbookService.getGuestbook(userId);
         return ResponseEntity.ok(guestbookList);
     }
 
     @PostMapping("/write")
-    ResponseEntity<String> writeGuestbook(HttpSession session, int friendUserId, String content) {
+    ResponseEntity<String> writeGuestbook(HttpSession session, @RequestParam int friendUserId, @RequestParam String content) {
         Integer userId = (Integer) session.getAttribute("userId");
         try {
             guestbookService.writeGuestbook(userId, friendUserId, content);

@@ -5,8 +5,6 @@ import com.sunny.sunnyfarm.dto.WeatherDto;
 import com.sunny.sunnyfarm.entity.UserPlant;
 import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDateTime;
-
 public interface PlantService {
     UserPlantDto getPlantInfo(int userPlantId);
     ResponseEntity<String> waterPlant(int userId, int userPlantId);
