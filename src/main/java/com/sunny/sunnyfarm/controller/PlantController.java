@@ -1,10 +1,13 @@
 package com.sunny.sunnyfarm.controller;
 
+import com.sunny.sunnyfarm.dto.PlantbookDto;
 import com.sunny.sunnyfarm.service.PlantService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -14,6 +17,15 @@ public class PlantController {
 
     public PlantController(PlantService plantService) {
         this.plantService = plantService;
+    }
+
+    @GetMapping("/book")
+    ResponseEntity<List<PlantbookDto>> getPlantBook(HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) userId = 1;
+
+        List<PlantbookDto> plantBooks = plantService.getPlantBook(userId);
+        return ResponseEntity.ok(plantBooks);
     }
 
     @PostMapping("/water")

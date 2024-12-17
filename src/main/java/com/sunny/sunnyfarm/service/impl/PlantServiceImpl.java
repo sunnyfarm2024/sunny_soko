@@ -1,37 +1,109 @@
 package com.sunny.sunnyfarm.service.impl;
-import com.sunny.sunnyfarm.dto.UserPlantDto;
+
+import com.sunny.sunnyfarm.dto.PlantDto;
+import com.sunny.sunnyfarm.dto.PlantbookDto;
+import com.sunny.sunnyfarm.dto.WeatherDto;
 import com.sunny.sunnyfarm.entity.*;
 import com.sunny.sunnyfarm.repository.*;
 import com.sunny.sunnyfarm.service.PlantService;
 import com.sunny.sunnyfarm.service.TitleService;
+import com.sunny.sunnyfarm.service.WeatherServise;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class PlantServiceImpl implements PlantService {
 
+    private final FarmRepository farmRepository;
+    private final PlantRepository plantRepository;
     private final TitleService titleService;
     private final UserPlantRepository userPlantRepository;
     private final UserRepository userRepository;
-    private final PlantRepository plantRepository;
     private final PlantBookRepository plantbookRepository;
     private final TitleRepository titleRepository;
+    private final WeatherServise weatherServise;
 
-    public PlantServiceImpl(TitleService titleService, UserPlantRepository userPlantRepository, UserRepository userRepository, PlantRepository plantRepository, PlantBookRepository plantbookRepository, TitleRepository titleRepository) {
-        this.titleService = titleService;
-        this.userPlantRepository = userPlantRepository;
-        this.userRepository = userRepository;
-        this.plantRepository = plantRepository;
-        this.plantbookRepository = plantbookRepository;
-        this.titleRepository = titleRepository;
+    public List<PlantDto> getPlant(Integer farmId){
+        Farm farm = farmRepository.findById(farmId)
+                .orElseThrow(() -> new IllegalArgumentException("농장을 찾을 수 없습니다. ID: " + farmId));
+
+        List<UserPlant> userPlants = Stream.of(
+                farm.getLeftPlant(),
+                farm.getCenterPlant(),
+                farm.getRightPlant()
+        ).filter(Objects::nonNull).toList(); // Null 값 제외
+
+        List<PlantDto> plantDtos = new ArrayList<>();
+
+        for (UserPlant userPlant : userPlants) {
+            Plant plant = plantRepository.findById(userPlant.getPlant().getPlantId())
+                    .orElseThrow(() -> new IllegalArgumentException("식물을 찾을 수 없습니다. ID: " + userPlant.getPlant().getPlantId()));
+
+            String plantLocation = findPlantLocation(farm, userPlant);
+            String plantImage = findPlantImage(userPlant, plant);
+
+            PlantDto plantDto = new PlantDto(
+                    userPlant.getPlantName(),
+                    plant.getPlantType().name(),
+                    userPlant.getGrowthStage().name(),
+                    String.valueOf(userPlant.getGrowthProgress()),
+                    userPlant.getWaterLevel(),
+                    userPlant.getLivesLeft(),
+                    plantLocation,
+                    plantImage,
+                    plant.getDifficulty().name(),
+                    userPlant.getFertilizerEndsAt()
+            );
+            plantDtos.add(plantDto);
+        }
+        return plantDtos;
     }
 
+    @Override
+    public List<PlantbookDto> getPlantBook(Integer userId) {
+        List<PlantBook> plantBooks = plantbookRepository.getByUserId(userId);
 
+        return plantBooks.stream()
+                .map(plantBook -> new PlantbookDto(
+                        plantBook.getPlantbookDescription(),
+                        plantBook.getPlantbookImage()
+                )).toList();
+    }
+
+    private String findPlantLocation(Farm farm, UserPlant userPlant) {
+        if (userPlant == farm.getLeftPlant()) {
+            return "left";
+        } else if (userPlant == farm.getCenterPlant()) {
+            return "center";
+        } else if (userPlant == farm.getRightPlant()) {
+            return "right";
+        }
+        return null;
+    }
+
+    private String findPlantImage(UserPlant userPlant, Plant plant) {
+        if (userPlant.getLivesLeft() == 0) {
+            return plant.getDeadImage();
+        } else {
+            return switch (userPlant.getGrowthStage()) {
+                case LEVEL1 -> plant.getLevel1Image();
+                case LEVEL2 -> plant.getLevel2Image();
+                case LEVEL3 -> plant.getLevel3Image();
+                case MAX -> plant.getMaxImage();
+            };
+        }
+    }
 
     @Override
     public ResponseEntity<String> waterPlant(int userId, int userPlantId) {
@@ -105,7 +177,7 @@ public class PlantServiceImpl implements PlantService {
         Plant plant = userPlant.getPlant();
         User user = userPlant.getFarm().getUser();
 
-        //WeatherDto 가져오기 ~ : parameter : userId (user.userId)
+        //WeatherDto weatherDto = weatherServise.getWeather(user.getUserId());
 
         WeatherDto weatherDto = new WeatherDto(
                 "19",

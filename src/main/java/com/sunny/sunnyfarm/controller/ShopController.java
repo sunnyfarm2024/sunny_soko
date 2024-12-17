@@ -25,6 +25,7 @@ public class ShopController {
     ResponseEntity<List<ShopDto>> getItemList(HttpSession session) {
         List<Shop> shop = shopService.getItemList();
         session.setAttribute("shop", shop);
+        System.out.println("Session Shop Attribute: " + session.getAttribute("shop"));
 
         List<ShopDto> itemList = shop.stream()
                 .map(item -> new ShopDto(
@@ -43,6 +44,7 @@ public class ShopController {
     @GetMapping("/check")
     ResponseEntity<Object> checkItemAvailability(HttpSession session, @RequestParam String itemName) {
         Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) userId = 1;
         @SuppressWarnings("unchecked")
         List<Shop> shop = (List<Shop>) session.getAttribute("shop");
 
@@ -73,11 +75,13 @@ public class ShopController {
         boolean exist = shopService.checkItemAvailability(userId, item.getItemId());
 
         if (exist) {
+            System.out.println("ABC");
             Map<String, Object> response = new HashMap<>();
             response.put("check", "decoration");
             response.put("message", "중복된 인테리어입니다.");
             return ResponseEntity.status(400).body(response);
         } else {
+            System.out.println("DEF");
             return ResponseEntity.status(200).body("구매 가능한 아이템입니다");
         }
     }
@@ -90,6 +94,7 @@ public class ShopController {
 
 
         Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) userId = 1;
         @SuppressWarnings("unchecked")
         List<Shop> shop = (List<Shop>) session.getAttribute("shop");
 
