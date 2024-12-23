@@ -84,5 +84,6 @@ public class QuestServiceImpl implements QuestService {
     @Override
     public void resetDailyQuests() {
         questRepository.resetDailyQuests();
+        questRepository.resetAttendQuests();
     }
 }

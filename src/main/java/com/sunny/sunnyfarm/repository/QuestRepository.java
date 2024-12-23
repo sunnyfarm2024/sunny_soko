@@ -22,4 +22,8 @@ public interface QuestRepository extends JpaRepository<UserQuest, Integer> {
     @Query("UPDATE UserQuest uq SET uq.isQuestCompleted = FALSE, uq.questProgress = 0 where uq.quest.type = 'DAILY'")
     void resetDailyQuests();
 
+    @Modifying
+    @Transactional
+    @Query("UPDATE UserQuest uq SET uq.questProgress = 1 where uq.quest.questId = 8")
+    void resetAttendQuests();
 }

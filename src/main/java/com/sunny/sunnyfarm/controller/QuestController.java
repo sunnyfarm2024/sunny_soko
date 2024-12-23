@@ -19,6 +19,7 @@ public class QuestController {
 
     @GetMapping("/list")
     ResponseEntity<List<QuestDto>> getQuestList(HttpSession session, @RequestParam String type) {
+        session.setAttribute("userId", 1);
         Integer userId = (Integer) session.getAttribute("userId");
         return questService.getQuestList(userId, type);
     }
@@ -26,6 +27,7 @@ public class QuestController {
     @PostMapping("/progress")
     ResponseEntity<String> updateQuestProgress(HttpSession session, @RequestParam int questId) {
         Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) userId = 1;
         try {
             questService.updateQuestProgress(userId, questId); // Service 메서드 호출
             return ResponseEntity.ok("퀘스트 진행 성공"); // 성공 시 메시지 반환
@@ -38,6 +40,7 @@ public class QuestController {
     @PostMapping("/reward")
     ResponseEntity<String> claimQuestReward(HttpSession session, @RequestParam int questId) {
         Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) userId = 1;
         try {
             questService.claimQuestReward(userId, questId); // Service 메서드 호출
             return ResponseEntity.ok("퀘스트 보상 수령 성공"); // 성공 시 메시지 반환
