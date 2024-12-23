@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QuestDto {
+    private int questId;
     private String type;
     private String questDescription;
     private int reward;
