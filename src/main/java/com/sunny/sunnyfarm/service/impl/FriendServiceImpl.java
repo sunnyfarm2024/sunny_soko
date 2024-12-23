@@ -6,9 +6,9 @@ import com.sunny.sunnyfarm.entity.User;
 import com.sunny.sunnyfarm.repository.FriendRepository;
 import com.sunny.sunnyfarm.repository.UserRepository;
 import com.sunny.sunnyfarm.service.FriendService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,15 +16,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class FriendServiceImpl implements FriendService {
 
     private final FriendRepository friendRepository;
     private final UserRepository userRepository;
 
-    public FriendServiceImpl(FriendRepository friendRepository, UserRepository userRepository, UserRepository userRepository1) {
-        this.friendRepository = friendRepository;
-        this.userRepository = userRepository1;
-    }
 
     @Override
     public Map<String, List<FriendDto>> getFriendList(int userId) {
@@ -33,17 +30,17 @@ public class FriendServiceImpl implements FriendService {
         List<FriendDto> pendingFriends = friendList.stream()
                 .filter(friend -> friend.getStatus() == Friend.FriendStatus.PENDING)
                 .map(friend -> new FriendDto(
-                        friend.getFriendUser().getUserId(),
-                        friend.getFriendUser().getUserName(),
-                        friend.getFriendUser().getProfilePicture())
+                        friend.getUser().getUserId(),
+                        friend.getUser().getUserName(),
+                        friend.getUser().getProfilePicture())
                 ).collect(Collectors.toList());
 
         List<FriendDto> acceptedFriends = friendList.stream()
                 .filter(friend -> friend.getStatus() == Friend.FriendStatus.ACCEPTED)
                 .map(friend -> new FriendDto(
-                        friend.getFriendUser().getUserId(),
-                        friend.getFriendUser().getUserName(),
-                        friend.getFriendUser().getProfilePicture())
+                        friend.getUser().getUserId(),
+                        friend.getUser().getUserName(),
+                        friend.getUser().getProfilePicture())
                 ).collect(Collectors.toList());
 
         // JSON 응답 형식에 맞게 구성
