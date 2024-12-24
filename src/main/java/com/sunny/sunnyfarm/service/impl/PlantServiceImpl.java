@@ -6,6 +6,7 @@ import com.sunny.sunnyfarm.dto.WeatherDto;
 import com.sunny.sunnyfarm.entity.*;
 import com.sunny.sunnyfarm.repository.*;
 import com.sunny.sunnyfarm.service.PlantService;
+import com.sunny.sunnyfarm.service.QuestService;
 import com.sunny.sunnyfarm.service.TitleService;
 import com.sunny.sunnyfarm.service.WeatherServise;
 import jakarta.persistence.EntityNotFoundException;
@@ -33,6 +34,9 @@ public class PlantServiceImpl implements PlantService {
     private final PlantBookRepository plantbookRepository;
     private final TitleRepository titleRepository;
     private final WeatherServise weatherServise;
+    private final QuestRepository questRepository;
+    private final QuestService questService;
+    private final UserQuestRepository userQuestRepository;
 
     public List<PlantDto> getPlant(Integer farmId){
         Farm farm = farmRepository.findById(farmId)
@@ -140,16 +144,17 @@ public class PlantServiceImpl implements PlantService {
     public ResponseEntity<String> sellPlant(int userId, int userPlantId) {
         UserPlant userPlant = userPlantRepository.findByUserPlantId(userPlantId);
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("회원 정보를 찾을 수가 없습니다"));
-        Plant plant = plantRepository.findById(userPlantId).orElseThrow(() -> new EntityNotFoundException("해당 식물을 찾을 수 없습니다"));
 
+        int plantId = userPlant.getPlant().getPlantId();
+        Plant plant = plantRepository.findById(plantId).orElseThrow(() -> new EntityNotFoundException("해당 식물을 찾을 수 없습니다"));
 
         if (userPlant.getGrowthStage() == UserPlant.GrowthStage.MAX) {
             if (deletePlant(userPlantId)) {
                 int price = plant.getSalePrice();
                 int coinBalance = user.getCoinBalance();
                 user.setCoinBalance(price + coinBalance);
-                userPlantRepository.save(userPlant);
-                //퀘스트 달성
+                userRepository.save(user);
+                questService.updateQuestProgress(userId, plantId);
                 return ResponseEntity.ok("식물을 판매했습니다.");
             } else {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("판매 실패했습니다.");
